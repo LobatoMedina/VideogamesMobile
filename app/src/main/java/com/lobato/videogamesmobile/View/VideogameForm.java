@@ -111,16 +111,56 @@ public class VideogameForm extends AppCompatActivity {
               );
               PostGame(gameData);
           });
+          genres = videogame.getGenres();
+          platforms = videogame.getPlatforms();
           videogame.setGenres( new ArrayList<>());
           videogame.setPlatforms(new ArrayList<>());
         }else {
+            genres = new ArrayList<>();
+            platforms = new ArrayList<>();
             btnAddGame.setOnClickListener(v -> {
+                if(name.getText().toString().isBlank() ||
+                        author.getText().toString().isBlank() ||
+                        specs.getText().toString().isBlank() ||
+                        price.getText().toString().isBlank() ||
+                        stock.getText().toString().isBlank() ||
+                        url.getText().toString().isBlank()
+                ){
+                    Toast.makeText(this, "faltan campos", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 VideoGameInDTO gameDto = new VideoGameInDTO();
+                gameDto.setName(name.getText().toString());
+                gameDto.setAuthor(author.getText().toString());
+                gameDto.setSpecs(specs.getText().toString());
+                gameDto.setPrice(Double.parseDouble(price.getText().toString()));
+                gameDto.setStock(Integer.parseInt(stock.getText().toString()));
+                gameDto.setDemo(url.getText().toString());
+                gameDto.setEsrbid(spEsrb.getSelectedItemPosition());
+                List<Integer> tmpGen = new ArrayList<>();
+                for (var number :
+                        genres) {
+                    tmpGen.add(number.getId());
+                }
+                gameDto.setGenres(tmpGen);
+                List<Integer> tmpPlat = new ArrayList<>();
+                for (var number :
+                        platforms) {
+                    tmpPlat.add(number.getId());
+                }
+                gameDto.setPlatforms(tmpPlat);
+
+
                 RequestBody gameData = RequestBody.create(
                         MediaType.parse("application/json"),
                         new Gson().toJson(gameDto)
                 );
-                PostGame(gameData);
+                try{
+                    PostGame(gameData);
+                    clearInputs();
+                } catch (RuntimeException e) {
+                    Log.e("Error al ingresar", e.getMessage());
+                }
             });
         }
 
@@ -129,9 +169,11 @@ public class VideogameForm extends AppCompatActivity {
             fetchGenres();
             fetchPlatforms();
             buttonGenre.setOnClickListener(v -> {
+                if(spGenres.getSelectedItemPosition() == 0) return;
                 genres.add(new GenreDTO(spGenres.getSelectedItemPosition(), spGenres.getSelectedItem().toString()));
             });
             buttonPlatform.setOnClickListener(v -> {
+                if(spPlatforms.getSelectedItemPosition() == 0) return;
                 platforms.add(new PlatformDTO(spPlatforms.getSelectedItemPosition() ,spPlatforms.getSelectedItem().toString()));
             });
 
@@ -141,24 +183,31 @@ public class VideogameForm extends AppCompatActivity {
     }
     public void PostGame(RequestBody gameData){
         if (selectedImageUri == null) {
+            Toast.makeText(this, "falta una imagen", Toast.LENGTH_LONG).show();
             return;
         }
+        try{
+            File imageFile = getFileFromUri(selectedImageUri);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), imageFile);
+            MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", imageFile.getName(), requestFile);
+            Call<ResponseBody> call = apiService.addGame(gameData, filePart);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if(response.isSuccessful()){
+                        Toast.makeText(VideogameForm.this, "Sexooo", Toast.LENGTH_LONG).show();
+                    }
+                }
 
-        File imageFile = getFileFromUri(selectedImageUri);
-        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), imageFile);
-        MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", imageFile.getName(), requestFile);
-        Call<ResponseBody> call = apiService.addGame(gameData, filePart);
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
 
-            }
+                }
+            });
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-            }
-        });
+        }catch (Exception e){
+            throw new RuntimeException( e.getMessage());
+        }
 
     }
     private void fecthEsrb(){
@@ -169,6 +218,7 @@ public class VideogameForm extends AppCompatActivity {
                 Log.println(Log.VERBOSE, "Responser",response.message() );
                 if(response.isSuccessful() && response.body() != null){
                     ArrayList<String> list = new ArrayList<>();
+                    list.add("Selecciona una opcion");
                     for (var esrb :
                             response.body()) {
                         list.add(esrb.getName());
@@ -176,6 +226,7 @@ public class VideogameForm extends AppCompatActivity {
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(VideogameForm.this, android.R.layout.simple_spinner_item, list);
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spEsrb.setAdapter(adapter);
+
                     spEsrb.setSelection(1);
                     spEsrb.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
@@ -194,7 +245,7 @@ public class VideogameForm extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<EsrbDTO>> call, Throwable t) {
-                Toast.makeText(VideogameForm.this, "No es posible acceder al servidor", Toast.LENGTH_LONG);
+                Toast.makeText(VideogameForm.this, "No es posible acceder al servidor", Toast.LENGTH_LONG).show();
                 throw new RuntimeException("Error al acceder al servidor");
             }
         });
@@ -207,6 +258,7 @@ public class VideogameForm extends AppCompatActivity {
                 if(response.isSuccessful() && response.body() != null) {
 
                     ArrayList<String> list = new ArrayList<>();
+                    list.add("Selecciona una opcion");
                     for (var genres :
                             response.body()) {
                         list.add(genres.getName());
@@ -214,7 +266,7 @@ public class VideogameForm extends AppCompatActivity {
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(VideogameForm.this, android.R.layout.simple_spinner_item, list);
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spGenres.setAdapter(adapter);
-                    spGenres.setSelection(1);
+                    spGenres.setSelection(0);
                     spGenres.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -245,6 +297,7 @@ public class VideogameForm extends AppCompatActivity {
             public void onResponse(Call<List<PlatformDTO>> call, Response<List<PlatformDTO>> response) {
                 if(response.isSuccessful() && response.body() != null) {
                     ArrayList<String> list = new ArrayList<>();
+                    list.add("Selecciona una opcion");
                     for (var patform :
                             response.body()) {
                         list.add(patform.getName());
@@ -252,7 +305,7 @@ public class VideogameForm extends AppCompatActivity {
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(VideogameForm.this, android.R.layout.simple_spinner_item, list);
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     spPlatforms.setAdapter(adapter);
-                    spPlatforms.setSelection(1);
+                    spPlatforms.setSelection(0);
                     spPlatforms.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -292,5 +345,20 @@ public class VideogameForm extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
+    }
+    private void clearInputs() {
+        name.setText("");
+        author.setText("");
+        price.setText("");
+        specs.setText("");
+        url.setText("");
+        stock.setText("");
+        spGenres.setSelection(0);
+        spPlatforms.setSelection(0);
+        spEsrb.setSelection(0);
+        this.selectedImageUri = null;
+        genres.clear();
+        platforms.clear();
+        name.requestFocus();
     }
 }

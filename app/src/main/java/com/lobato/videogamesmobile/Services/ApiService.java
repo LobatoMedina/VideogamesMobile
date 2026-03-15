@@ -25,13 +25,13 @@ public interface ApiService {
     @Multipart
     Call<ResponseBody> addGame(
             @Part("videoGameInDTO") RequestBody dto,
-            @Part("file") MultipartBody.Part image
+            @Part MultipartBody.Part file
             );
     @POST("api/game/update")
     @Multipart
     Call<ResponseBody> updateGame(
             @Part("videogame") RequestBody dto,
-            @Part("file") MultipartBody.Part image
+            @Part MultipartBody.Part file
     );
     @FormUrlEncoded
     @POST("api/game/delete")

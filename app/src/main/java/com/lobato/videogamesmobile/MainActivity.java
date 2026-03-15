@@ -2,6 +2,7 @@ package com.lobato.videogamesmobile;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -10,9 +11,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.lobato.videogamesmobile.Controller.MainController;
 import com.lobato.videogamesmobile.DTOs.DTOVideogame;
 import com.lobato.videogamesmobile.Services.ApiService;
+import com.lobato.videogamesmobile.View.VideogameAdapter;
 import com.lobato.videogamesmobile.View.VideogameForm;
 
 import java.util.List;
@@ -24,6 +29,7 @@ import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity {
     public ApiService apiService;
+    RecyclerView rv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +40,11 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        rv = findViewById(R.id.recycler_videogames);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        fetchAllGames();
+
+
     }
     @Override
     protected void onResume(){
@@ -44,11 +55,18 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(MainActivity.this, VideogameForm.class));
     }
     private void fetchAllGames(){
+        apiService = MainController.getclient().create(ApiService.class);
         Call<List<DTOVideogame>> call= apiService.getAllVideogames();
         call.enqueue(new Callback<List<DTOVideogame>>() {
             @Override
             public void onResponse(Call<List<DTOVideogame>> call, Response<List<DTOVideogame>> response) {
-
+                if (response.isSuccessful() && response.body() != null) {
+                    VideogameAdapter adapter = new VideogameAdapter(response.body(), MainActivity.this);
+                    rv.setAdapter(adapter);
+                    Toast.makeText(MainActivity.this, "Datos cargados correctamente", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Error en la respuesta del server", Toast.LENGTH_LONG).show();
+                }
             }
 
             @Override
