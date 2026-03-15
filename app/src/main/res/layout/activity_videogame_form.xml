@@ -257,7 +257,8 @@
             <TableLayout
                 android:id="@+id/lyt_genres"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
 
                 <TableRow
                     android:layout_width="match_parent"
