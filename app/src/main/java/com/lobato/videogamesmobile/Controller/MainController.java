@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MainController {
     private static Retrofit retrofit = null;
     private final static String URL = "https://lobatolab.tech";
-    static Retrofit getclient(){
+    public static Retrofit getclient(){
         if(retrofit!= null) return retrofit;
         OkHttpClient client = new OkHttpClient.Builder().build();
         retrofit = new Retrofit.Builder()
