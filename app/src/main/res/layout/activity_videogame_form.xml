@@ -21,7 +21,16 @@
     <ScrollView
         android:layout_width="407dp"
         android:layout_height="633dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="29dp"
+        android:layout_marginEnd="10dp"
+        android:padding="2dp"
+        android:paddingStart="2dp"
+        android:paddingLeft="2dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="2dp"
+        android:paddingRight="2dp"
+        android:paddingBottom="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -231,7 +240,7 @@
                     android:text="Url demo" />
 
                 <EditText
-                    android:id="@+id/txt_url"
+                    android:id="@+id/etxt_url"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -240,15 +249,16 @@
             </LinearLayout>
 
             <Button
-                android:id="@+id/button5"
+                android:id="@+id/btn_addGame"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Button" />
+                android:text="Agregar juego" />
 
             <TableLayout
                 android:id="@+id/lyt_genres"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
 
                 <TableRow
                     android:layout_width="match_parent"

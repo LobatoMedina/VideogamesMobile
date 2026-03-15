@@ -9,6 +9,7 @@ import com.lobato.videogamesmobile.DTOs.VideoGameInDTO;
 import java.util.List;
 
 import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -23,14 +24,14 @@ public interface ApiService {
     @POST("api/game/add")
     @Multipart
     Call<ResponseBody> addGame(
-            @Part VideoGameInDTO dto,
-            @Part MultipartBody.Part image
+            @Part("videoGameInDTO") RequestBody dto,
+            @Part MultipartBody.Part file
             );
     @POST("api/game/update")
     @Multipart
     Call<ResponseBody> updateGame(
-            @Part VideoGameInDTO dto,
-            @Part MultipartBody.Part image
+            @Part("videogame") RequestBody dto,
+            @Part MultipartBody.Part file
     );
     @FormUrlEncoded
     @POST("api/game/delete")
